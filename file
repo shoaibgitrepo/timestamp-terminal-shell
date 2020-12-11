@@ -1,0 +1,124 @@
+<?php
+session_start();
+if (!isset($_SESSION['login_user']))
+{
+	header("Location: login.php");
+}
+
+if($_SERVER["REQUEST_METHOD"] == "POST")
+{
+	$_SESSION['filter_data_type'] = $_POST['filter_data_type'];
+	
+
+}
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Equipment Data</title>
+
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+
+	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+	<script>
+	
+		function ShowSiteDetail(id){
+			$.ajax({url: "sitedetail.php?id="+id, success: function(result){
+				$("#id_site_detail").html(result);
+				$('#myModal').modal('show');
+			}});
+		}
+		
+		$('#myModal').on('hidden.bs.modal', function (e) {
+			$("#id_site_detail").html('');
+		})
+	
+	</script>	
+	
+	
+  </head>
+  <body>
+  
+  
+	<div class="panel panel-default">
+	  <div class="panel-heading">Summary</div>
+	  <div class="panel-body">
+
+
+
+<?php 
+
+	include 'dbinc.php';
+
+	$mysqli = new mysqli("$mysql_hostname", "$mysql_user", "$mysql_password", "$mysql_database");
+	if (mysqli_connect_errno()) {
+		printf("Connect failed: %s\n", mysqli_connect_error());
+		exit();
+	}
+	
+	$sql = "SELECT Name FROM customers WHERE Id=".$_SESSION['login_cust_id'];
+	$result = $mysqli->query($sql);
+	$data = $result->fetch_row();
+	$cust_name = $data[0];
+	echo "<h3>$cust_name</h3>";
+	$result->close();
+	
+	
+	$sql = "SELECT id, site_id FROM siteinfo WHERE CustomerId=".$_SESSION['login_cust_id'];
+	$result = $mysqli->query($sql);
+	
+?>	
+	<table class="table">
+		<tr>
+			<td>
+
+				<table class="table">
+					
+				
+<?php
+	while($data = $result->fetch_row()){
+		//echo "<tr><td>".$data[1]."</td></tr>";
+		echo "<tr><td><button type='button' class='btn btn-primary btn-sm' data-toggle='modal' OnClick='ShowSiteDetail($data[0])'>$data[1]</button></td></tr>";
+	}
+	$result->close();
+	$result->close();
+	mysqli_close($mysqli);
+
+?>
+				</table>
+
+			</td>
+			<td>
+				<div id="id_site_detail">
+					Please wait...
+				</div>
+			</td>
+		</tr>
+	</table>
+
+		<a class='btn btn-danger' role='button' href="logout.php">Logout</a>
+
+	
+  </div>
+</div>	
+	
+    
+
+
+</body>
+</html>
